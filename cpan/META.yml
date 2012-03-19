@@ -1,0 +1,17 @@
+--- #YAML:1.0
+name:                Test-Resub
+version:             1.06
+abstract:            Lexically scoped subroutine replacement for testing
+license:             ~
+author:              
+    - AirWave Wireless <AIRWAVE@cpan.org>
+generated_by:        ExtUtils::MakeMaker version 6.42
+distribution_type:   module
+requires:     
+    Class::Std:                    0
+    Scalar::Util:                  0
+    Storable:                      0
+    Test::More:                    0
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
+    version: 1.3
