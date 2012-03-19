@@ -1,3 +1,4 @@
 Rewrite of Test::Resub from CPAN:
 * don't use inside-out objects, since it makes extending this class annoying
 * work correctly in a Moose/Class::MOP environment
+ping
