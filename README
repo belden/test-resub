@@ -19,7 +19,7 @@ SYNOPSIS
 
          # scoped replacement of subroutine with argument capturing
          {
-           my $rs = resub 'Somewhere::show', sub { 'hi' }, capture => 1;
+           my $rs = resub 'Somewhere::show', sub { 'hi' };
            is( Somewhere->show('over the rainbow'), 'hi' );
            is_deeply( $rs->method_args, [['over the rainbow']] );
          }
@@ -31,9 +31,7 @@ SYNOPSIS
 DESCRIPTION
        This module allows you to temporarily replace a subroutine/method with
        arbitrary code.  Later, you can tell how many times was it called and
-       with what arguments each time.  You can also specify that the subrou-
-       tine/method must get called, must not get called, or may be optionally
-       called.
+       with what arguments each time.
 
 INSTALLATION
 
@@ -56,18 +54,12 @@ You can also look for information at:
     Search CPAN
         http://search.cpan.org/dist/Test-Resub
 
-    CPAN Request Tracker:
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Test-Resub
-
-    AnnoCPAN, annotated CPAN documentation:
-        http://annocpan.org/dist/Test-Resub
-
-    CPAN Ratings:
-        http://cpanratings.perl.org/d/Test-Resub
+    GitHub Request Tracker:
+        https://github.com/belden/test-resub/issues
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2001-2008 Aruba Networks, Inc.
+Copyright (C) 2012 Belden Lyman <belden@cpan.org>
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
