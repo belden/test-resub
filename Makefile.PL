@@ -3,17 +3,21 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    NAME                => 'Test::Resub',
-    AUTHOR              => 'AirWave Wireless <AIRWAVE@cpan.org>',
-    VERSION_FROM        => 'lib/Test/Resub.pm',
-    ABSTRACT_FROM       => 'lib/Test/Resub.pm',
-    PL_FILES            => {},
-    PREREQ_PM => {
-      'Test::More' => 0,
-      'Class::Std' => 0,
-      'Scalar::Util' => 0,
-      'Storable' => 0,
+	NAME                => 'Test::Resub',
+	AUTHOR              => 'Belden Lyman <belden@cpan.org>',
+	VERSION_FROM        => 'lib/Test/Resub.pm',
+	ABSTRACT_FROM       => 'lib/Test/Resub.pm',
+	PL_FILES            => {},
+	PREREQ_PM => {
+    'Test::More'      => 0,
+    'Scalar::Util'    => 0,
+    'Storable'        => 0,
+  },
+  META_MERGE => {
+    resources => {
+      bugtracker => 'https://github.com/belden/test-resub/issues',
     },
-    dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean               => { FILES => 'Test-Resub-*' },
-);
+  },
+  dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
+  clean               => { FILES => 'Test-Resub-*' },
+ );

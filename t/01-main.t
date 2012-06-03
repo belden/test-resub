@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 63;
+use Test::More tests => 61;
 
 # We need IO::Capture::Std(out|err) only for this test, so rather than
 # make the user install it for us, we have a copy for use in testing
@@ -42,10 +42,7 @@ sub stdout_of { return _std_of('IO::Capture::Stdout', @_) }
   # successful resub method in scalar context
   is( TestResub::resub_me2(), $orig_msg );
   {
-    my $resub = Test::Resub->new({
-      name => "TestResub::resub_me2",
-      code => sub { $msg },
-    });
+    my $resub = resub 'TestResub::resub_me2', sub { $msg };
     ok( $resub->not_called, 'start out uncalled' );
 
     is( TestResub::resub_me2(), $msg );
@@ -83,22 +80,11 @@ sub stdout_of { return _std_of('IO::Capture::Stdout', @_) }
 
   # Argument capturing
   {
-    # Don't capture arguments w/o 'capture => 1',
-    {
-      my $resub = Test::Resub->new({
-        name => "TestResub::resub_me2",
-        code => sub { $msg },
-      });
-      TestResub::resub_me2(1..10);
-      like( stderr_of(sub { $resub->args }), qr/capture.*flag/i );
-    }
-
     # capture arguments with 'capture => 1',
     {
       my $resub = Test::Resub->new({
         name => "TestResub::resub_me2",
         code => sub { $msg },
-        capture => 1,
       });
       is_deeply( $resub->args, [] );
       is_deeply( $resub->method_args, [] );
@@ -118,7 +104,7 @@ sub stdout_of { return _std_of('IO::Capture::Stdout', @_) }
         cat => 'meow',
       }] );
       $resub->reset;
-      
+
       # named method args
       TestResub->resub_me2(dog => 'bark', cat => 'meow');
       is_deeply( $resub->named_method_args, [{
@@ -203,7 +189,7 @@ sub stdout_of { return _std_of('IO::Capture::Stdout', @_) }
       my $rs = resub "TestResub::kinks_Flourtown";
     };
     like( $@,
-      qr/Package TestResub doesn't have a kinks_Flourtown.*'create' flag/,
+      qr/Package TestResub doesn't implement nor inherit a sub named 'kinks_Flourtown'.*'create' flag/,
       "Don't create nonexistent functions unless told to",
     );
 
@@ -290,13 +276,8 @@ sub stdout_of { return _std_of('IO::Capture::Stdout', @_) }
     });
     my $output = stdout_of(sub { undef $rs });
     like( $output, qr/not ok 1000/, q{not ok 1000 if not called} );
-    unlike( $output, qr/Class::Std/, q{don't have any Class::Std stuff in the longmess} );
 
-    $rs = Test::Resub->new({
-      name => 'TestChild::base_method',
-      code => sub { },
-      call => 'required',
-    });
+    $rs = resub('TestChild::base_method', sub {}, call => 'required');
     like( stdout_of(sub{ undef $rs }), qr/not ok 1000/ );
   }
 
@@ -328,8 +309,7 @@ sub stdout_of { return _std_of('IO::Capture::Stdout', @_) }
     TestChild->base_method();
     my $output = stdout_of(sub{ undef $rs });
     like( $output, qr/not ok 1000/ );
-    unlike( $output, qr/Test::Resub/ );
-    unlike( $output, qr/Class::Std/ );
+    like( $output, qr/Test::Resub/ ) or warn $output;
   }
 
   # we don't fail if uncalled and we've declared calling optional
@@ -431,4 +411,24 @@ sub stdout_of { return _std_of('IO::Capture::Stdout', @_) }
   });
   some_random_function(sub {});
   is( ref($rs->args->[0][0]), 'CODE', 'saved a coderef' );
+}
+
+# Although coderefs can be captured, we don't affect how dclone
+# works universally.
+{
+	require Storable;
+	my $rs = resub 'some::function', sub {
+    Storable::dclone([@_]);
+  }, create => 1;
+
+	my @args = ([1, 2, 3], sub { (4, 5, 6) }, [7, 8, 9]);
+
+	my $error;
+	local $@;
+	eval {
+		local $@;
+		local $SIG{__DIE__} = sub { $error = shift };
+		eval { some::function(@args) };
+	};
+	like ( $error, qr/Can't store CODE items/, "our use of dclone() doesn't globally affect dclone" );
 }

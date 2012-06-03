@@ -1,5 +1,10 @@
 Revision history for Test-Resub
 
+2.00    Re-release to CPAN under new maintainer. Changes include a few minor
+        bug fixes, removal of ->unique_args and ilk, and support for Moose
+        methods with 'before' and 'after' advice applied to them. Additionally,
+        the library has been largely rewritten not to use inside-out objects,
+        which makes extending this much easier.
 1.06    Added ->unique_args and ilk
 1.05    Small doc cleanup
         Added test for resub()
