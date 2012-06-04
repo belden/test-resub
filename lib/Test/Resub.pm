@@ -4,9 +4,9 @@ use strict;
 use warnings;
 
 use base qw(Exporter);
-our @EXPORT = qw(resub);
+our @EXPORT = qw(resub bulk_resub);
 
-our $VERSION = 2.01;
+our $VERSION = 2.02;
 
 use Carp qw(croak);
 use Storable qw(dclone);
@@ -34,6 +34,15 @@ sub resub {
     name => $name,
     code => $code,
   );
+}
+
+sub bulk_resub {
+	my ($target, $data, %args) = @_;
+	my %rs;
+	foreach (keys %$data) {
+		$rs{$_} = resub "$target\::$_", $data->{$_}, %args;
+	}
+	return %rs;
 }
 
 sub _validate_params_lameley {
