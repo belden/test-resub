@@ -13,9 +13,9 @@ use Test::More tests => 2;
 
 	sub dispatch_table {
 		return (
-			add => \&do_add,
-			get => \&do_get,
-		);
+      add => \&do_add,
+      get => \&do_get,
+    );
 	}
 }
 
