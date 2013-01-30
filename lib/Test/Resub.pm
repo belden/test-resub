@@ -124,9 +124,15 @@ sub new {
 	}, prototype(\&{$self->{name}}));
 
 	$self->swap_out($wrapper_for_code);
+	$self->{fingerprint} = $self->_fingerprint;
 	_restore_variables($self->{name}, $self->{stashed_variables});
 
 	return $self;
+}
+
+sub _fingerprint {
+	my ($self) = @_;
+	return '' . UNIVERSAL::can(@{$self}{qw(target_package target_sub)});
 }
 
 sub _context {
@@ -342,10 +348,18 @@ sub reset {
 	$self->{args} = [];
 }
 
+my %deferred;
 sub DESTROY {
-	my($self,) = @_;
+	my($self) = @_;
+$DB::single = 1 if $MY::var; # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+	1;1;
 
-	$self->swap_out($self->{orig_code}, 1);
+	if ($self->_fingerprint eq $self->{fingerprint}) {
+    $self->swap_out($self->{orig_code}, 1);
+		$self->swap_out($_, 1) while pop @{$deferred{$self->{name}}||[]};
+  } else {
+		push @{$deferred{$self->{name}}}, $self->{orig_code};
+	}
 
 	if ($self->{autovivified}) {
 		my ($package, $sub) = @{$self}{qw(target_package target_sub)};
@@ -422,6 +436,8 @@ something like this:
 
 This module is handy if you're replacing a subroutine with a function prototype,
 or for when you need to prove the inputs to the functions that you're calling.
+
+=head1 EXPORTED FUNCTIONS
 
 =head1 CONSTRUCTOR
 
@@ -630,7 +646,7 @@ For example:
   # returns [3306, {a => 'b', c => 123},
   #          9158, {a => 'z', c => 456}]
 
-Note: the first argument is automatically discarded B<before> the optional 
+Note: the first argument is automatically discarded B<before> the optional
 C<arg_start_index> parameter is applied. That is,
 
   my $rs = resub 'SomeClass::some_sub';
