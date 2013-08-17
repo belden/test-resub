@@ -16,6 +16,7 @@ WriteMakefile(
   META_MERGE => {
     resources => {
       bugtracker => 'https://github.com/belden/test-resub/issues',
+      repository => 'https://github.com/belden/test-resub',
     },
   },
   dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
