@@ -233,10 +233,6 @@ sub swap_out {
   # original code. Here's how we'd find it for some versions of Moose:
   my ($wrapped) = grep { $_->{name} eq $target_sub && $_->can('before_modifiers') } $meta->get_all_methods;
 
-  # from here on out we assume you're a Moose-like class.
-  my $was_immutable = $meta->is_immutable;
-  $meta->make_mutable if $was_immutable;
-
   # ugly code to go dig around for wrappers
   my ($before, $around, $after) = ([], [], []);
   if (defined $wrapped) {
@@ -288,8 +284,6 @@ sub swap_out {
     # we're moose-like but don't have any wrappers: swap ourselves in!
     $do_simple_swap->();
   }
-
-  $meta->make_immutable if $was_immutable;
 }
 
 sub _deep_exists {
