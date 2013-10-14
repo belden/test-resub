@@ -416,19 +416,19 @@ sub stdout_of { return _std_of('IO::Capture::Stdout', @_) }
 # Although coderefs can be captured, we don't affect how dclone
 # works universally.
 {
-	require Storable;
-	my $rs = resub 'some::function', sub {
+  require Storable;
+  my $rs = resub 'some::function', sub {
     Storable::dclone([@_]);
   }, create => 1;
 
-	my @args = ([1, 2, 3], sub { (4, 5, 6) }, [7, 8, 9]);
+  my @args = ([1, 2, 3], sub { (4, 5, 6) }, [7, 8, 9]);
 
-	my $error;
-	local $@;
-	eval {
-		local $@;
-		local $SIG{__DIE__} = sub { $error = shift };
-		eval { some::function(@args) };
-	};
-	like ( $error, qr/Can't store CODE items/, "our use of dclone() doesn't globally affect dclone" );
+  my $error;
+  local $@;
+  eval {
+    local $@;
+    local $SIG{__DIE__} = sub { $error = shift };
+    eval { some::function(@args) };
+  };
+  like ( $error, qr/Can't store CODE items/, "our use of dclone() doesn't globally affect dclone" );
 }

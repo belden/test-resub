@@ -3,12 +3,12 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-	NAME                => 'Test::Resub',
-	AUTHOR              => 'Belden Lyman <belden@cpan.org>',
-	VERSION_FROM        => 'lib/Test/Resub.pm',
-	ABSTRACT_FROM       => 'lib/Test/Resub.pm',
-	PL_FILES            => {},
-	PREREQ_PM => {
+  NAME                => 'Test::Resub',
+  AUTHOR              => 'Belden Lyman <belden@cpan.org>',
+  VERSION_FROM        => 'lib/Test/Resub.pm',
+  ABSTRACT_FROM       => 'lib/Test/Resub.pm',
+  PL_FILES            => {},
+  PREREQ_PM => {
     'Test::More'      => 0,
     'Scalar::Util'    => 0,
     'Storable'        => 0,

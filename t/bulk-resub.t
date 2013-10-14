@@ -9,19 +9,19 @@ use Test::Resub qw(bulk_resub);
 use Test::More tests => 2;
 
 {
-	package Somewhere;
+  package Somewhere;
 
-	sub dispatch_table {
-		return (
+  sub dispatch_table {
+    return (
       add => \&do_add,
       get => \&do_get,
     );
-	}
+  }
 }
 
 my %d = (
-	add => sub { 'add' },
-	get => sub { 'get' },
+  add => sub { 'add' },
+  get => sub { 'get' },
 );
 
 my %rs = bulk_resub 'Somewhere', \%d, create => 1;
