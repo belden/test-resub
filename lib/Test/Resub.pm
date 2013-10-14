@@ -14,22 +14,22 @@ use Scalar::Util qw(weaken);
 
 sub default_replacement_sub { sub {} }
 sub set_prototype(&$) {
-	if (_implements('Scalar::Util','set_prototype')) {
-		goto \&Scalar::Util::set_prototype;
-	} else {
-		my $code = shift;
-		my $proto = shift;
-		$proto = defined $proto ? "($proto)" : '';
-		local $@;
-		return eval "sub $proto { goto \$code }";
-	}
+  if (_implements('Scalar::Util','set_prototype')) {
+    goto \&Scalar::Util::set_prototype;
+  } else {
+    my $code = shift;
+    my $proto = shift;
+    $proto = defined $proto ? "($proto)" : '';
+    local $@;
+    return eval "sub $proto { goto \$code }";
+  }
 }
 
 sub resub {
-	my ($name, $code, %args) = @_;
-	die "give me a fully qualified function name: $name ain't good enough\n"
-		unless $name =~ /::/;
-	return __PACKAGE__->new(
+  my ($name, $code, %args) = @_;
+  die "give me a fully qualified function name: $name ain't good enough\n"
+    unless $name =~ /::/;
+  return __PACKAGE__->new(
     %args,
     name => $name,
     code => $code,
@@ -37,107 +37,107 @@ sub resub {
 }
 
 sub bulk_resub {
-	my ($target, $data, %args) = @_;
-	my %rs;
-	foreach (keys %$data) {
-		$rs{$_} = resub "$target\::$_", $data->{$_}, %args;
-	}
-	return %rs;
+  my ($target, $data, %args) = @_;
+  my %rs;
+  foreach (keys %$data) {
+    $rs{$_} = resub "$target\::$_", $data->{$_}, %args;
+  }
+  return %rs;
 }
 
 sub _validate_params_lameley {
-	my ($class, %args) = @_;
+  my ($class, %args) = @_;
 
-	my %known =
-		map { $_ => 1 }
-		qw(name code create call capture deep_copy);
+  my %known =
+    map { $_ => 1 }
+    qw(name code create call capture deep_copy);
 
-	my %bad =
-		map { $_ => $args{$_} }
-		grep { ! $known{$_} }
-		keys %args;
+  my %bad =
+    map { $_ => $args{$_} }
+    grep { ! $known{$_} }
+    keys %args;
 
-	if (scalar keys %bad) {
-		my $bad = join ', ', map { "$_ => $bad{$_}" } keys %bad;
+  if (scalar keys %bad) {
+    my $bad = join ', ', map { "$_ => $bad{$_}" } keys %bad;
     croak "$class->new - not sure how to handle unknown arg '$bad'\n";
   }
 
-	croak "don't know how to handle 'call  => $args{call}'"
-		if exists $args{call} && ! in($args{call}, qw(optional required forbidden));
+  croak "don't know how to handle 'call  => $args{call}'"
+    if exists $args{call} && ! in($args{call}, qw(optional required forbidden));
 
-	return (
-		deep_copy => 1,
-		call => 'required',
-		%args,
-	);
+  return (
+    deep_copy => 1,
+    call => 'required',
+    %args,
+  );
 }
 
 sub new {
-	my $class = shift;
+  my $class = shift;
 
-	# lame adaptor for old-style users of Test::Resub (are there any?)
-	my %args = ref($_[0]) eq 'HASH' ? %{$_[0]} : @_;
+  # lame adaptor for old-style users of Test::Resub (are there any?)
+  my %args = ref($_[0]) eq 'HASH' ? %{$_[0]} : @_;
 
-	# I'm not gonna lie, this really is stupidly ugly
-	%args = $class->_validate_params_lameley(%args);
+  # I'm not gonna lie, this really is stupidly ugly
+  %args = $class->_validate_params_lameley(%args);
 
-	croak "I return a highly useful object, gotta call me in non-void context!\n"
-		unless defined wantarray;
+  croak "I return a highly useful object, gotta call me in non-void context!\n"
+    unless defined wantarray;
 
-	my $name = $args{name};
-	(my $sane = $name) =~ s{->}{::}g;
-	$sane =~ s{[^\w:]}{}g;
-	croak "bad method name: $args{name} (expected: $sane)" if $args{name} ne $sane;
+  my $name = $args{name};
+  (my $sane = $name) =~ s{->}{::}g;
+  $sane =~ s{[^\w:]}{}g;
+  croak "bad method name: $args{name} (expected: $sane)" if $args{name} ne $sane;
 
-	my $code = $args{code} || $class->default_replacement_sub;
+  my $code = $args{code} || $class->default_replacement_sub;
 
-	my ($orig_code, $autovivified) = $class->_get_orig_code(%args);
+  my ($orig_code, $autovivified) = $class->_get_orig_code(%args);
 
-	my ($package, $sub) = $args{name} =~ m{^(.*)::(.*?)$};
+  my ($package, $sub) = $args{name} =~ m{^(.*)::(.*?)$};
 
-	my $self = bless {
-		%args,
-		target_package => $package,
-		target_sub => $sub,
-		orig_code => $orig_code,
-		called => 0,
-		args => [],
-		autovivified => $autovivified,
-		stashed_variables => _save_variables($args{name}),
-		deep_copy => $args{deep_copy},
-	}, $class;
+  my $self = bless {
+    %args,
+    target_package => $package,
+    target_sub => $sub,
+    orig_code => $orig_code,
+    called => 0,
+    args => [],
+    autovivified => $autovivified,
+    stashed_variables => _save_variables($args{name}),
+    deep_copy => $args{deep_copy},
+  }, $class;
 
-	weaken(my $weak_self = $self);
-	my $wrapper_for_code = set_prototype(sub {
-		$weak_self->{called}++;
-		$weak_self->{was_called} = 1;
-		push @{$weak_self->{args}}, ($weak_self->{deep_copy}
-			? do {
-				local $Storable::Deparse = 1;
-				local $Storable::Eval = 1;
-				dclone(\@_);
-			}
-			: [@_]);
+  weaken(my $weak_self = $self);
+  my $wrapper_for_code = set_prototype(sub {
+    $weak_self->{called}++;
+    $weak_self->{was_called} = 1;
+    push @{$weak_self->{args}}, ($weak_self->{deep_copy}
+      ? do {
+        local $Storable::Deparse = 1;
+        local $Storable::Eval = 1;
+        dclone(\@_);
+      }
+      : [@_]);
 
-		# Are you debugging? Here's where we call the original code in its original context.
-		return $code->(@_);
-	}, prototype(\&{$self->{name}}));
+    # Are you debugging? Here's where we call the original code in its original context.
+    return $code->(@_);
+  }, prototype(\&{$self->{name}}));
 
-	$self->swap_out($wrapper_for_code);
-	_restore_variables($self->{name}, $self->{stashed_variables});
+  $self->swap_out($wrapper_for_code);
+  _restore_variables($self->{name}, $self->{stashed_variables});
 
-	return $self;
+  return $self;
 }
 
 sub _context {
-	my ($class) = @_;
-	my $wantarray = (caller(1))[5];
-	my $context = $wantarray
-		? 'list'
-		: defined $wantarray
-			? 'scalar'
-			: 'void';
-	return $context;
+  my ($class) = @_;
+  my $wantarray = (caller(1))[5];
+  my $context = $wantarray
+    ? 'list'
+    : defined $wantarray
+      ? 'scalar'
+      : 'void';
+  return $context;
 }
 
 sub _save_variables {
@@ -153,153 +153,153 @@ sub _save_variables {
 sub _restore_variables {
   my ($varname, $data) = @_;
   no strict 'refs';
-	no warnings 'uninitialized';
+  no warnings 'uninitialized';
   $$varname = $data->{scalar};
   @$varname = @{$data->{array}};
   %$varname = %{$data->{hash}};
 }
 
 sub _implements {
-	my ($package, $sub) = @_;
+  my ($package, $sub) = @_;
 
-	local $@;
-	my %stash = eval "\%$package\::";
-	croak "finding $package\'s stash: $@\n" if $@;
+  local $@;
+  my %stash = eval "\%$package\::";
+  croak "finding $package\'s stash: $@\n" if $@;
 
-	return exists $stash{$sub} && *{$stash{$sub}}{CODE} && *{$stash{$sub}}{NAME} eq $sub;
+  return exists $stash{$sub} && *{$stash{$sub}}{CODE} && *{$stash{$sub}}{NAME} eq $sub;
 }
 
 sub _get_orig_code {
-	my ($class, %args) = @_;
+  my ($class, %args) = @_;
 
-	my ($package, $sub) = $args{name} =~ m{^(.*)::(.+)$};
+  my ($package, $sub) = $args{name} =~ m{^(.*)::(.+)$};
 
-	return (\&{$args{name}}, 0) if _implements($package, $sub);
-	return ($package->can($sub), 1) if $package->can($sub);
+  return (\&{$args{name}}, 0) if _implements($package, $sub);
+  return ($package->can($sub), 1) if $package->can($sub);
 
-	if (!$args{create}) {
+  if (!$args{create}) {
     croak "Package $package doesn't implement nor inherit a sub named '$sub'. " .
-			"Generally autovivifying subs into existance leads to bugs, but if you know " .
-			"what you're doing you can pass the 'create' flag to $class->new";
+      "Generally autovivifying subs into existance leads to bugs, but if you know " .
+      "what you're doing you can pass the 'create' flag to $class->new";
   }
 
-	return (\&{$args{name}}, 1);
+  return (\&{$args{name}}, 1);
 }
 
 sub in {
-	my $needle = shift;
-	foreach (@_) {
+  my $needle = shift;
+  foreach (@_) {
     return 1 if $_ eq $needle;
   }
-	return 0;
+  return 0;
 }
 
 sub _looks_moosey {
-	my ($self, $code) = @_;
-	my ($target_package, $target_sub) = @{$self}{qw(target_package target_sub)};
-	my $meta = do { local $@; eval { Class::MOP::get_metaclass_by_name($target_package) } };
-	return $meta;
+  my ($self, $code) = @_;
+  my ($target_package, $target_sub) = @{$self}{qw(target_package target_sub)};
+  my $meta = do { local $@; eval { Class::MOP::get_metaclass_by_name($target_package) } };
+  return $meta;
 }
 
 sub swap_out {
-	my ($self, $code, $is_destroy) = @_;
+  my ($self, $code, $is_destroy) = @_;
 
-	my ($name, $target_package, $target_sub) = @{$self}{qw(name target_package target_sub)};
+  my ($name, $target_package, $target_sub) = @{$self}{qw(name target_package target_sub)};
 
-	my $do_simple_swap = sub {
-		no strict 'refs';
-		no warnings 'redefine';
-		*{$name} = $code;
-	};
+  my $do_simple_swap = sub {
+    no strict 'refs';
+    no warnings 'redefine';
+    *{$name} = $code;
+  };
 
-	# find the Class::MOP metaclass associated with our victim's encapsulating class
-	my $meta = $is_destroy ? 0 : do {
-		local $@;
-		eval { Class::MOP::get_metaclass_by_name($target_package) };
-	};
+  # find the Class::MOP metaclass associated with our victim's encapsulating class
+  my $meta = $is_destroy ? 0 : do {
+    local $@;
+    eval { Class::MOP::get_metaclass_by_name($target_package) };
+  };
 
-	# If we're DESTROYing then we can simply swap stuff in: either we're not moosey (so there are no modifiers to
-	# apply around our replacement code) -or- we are moosey but are destroying (in which case the original code we
-	# saved off is already wrapped up).
-	#
-	# If we don't have a $meta then we don't have a metaclass so can simply swap things in and out, regardless of
-	# whether we're DESTROYing or not: there's no Moose/Class::MOP wrappers to copy from the original code to our
-	# replacement.
-	if ($is_destroy || ! defined $meta) {
-		$do_simple_swap->();
-		return;
-	}
+  # If we're DESTROYing then we can simply swap stuff in: either we're not moosey (so there are no modifiers to
+  # apply around our replacement code) -or- we are moosey but are destroying (in which case the original code we
+  # saved off is already wrapped up).
+  #
+  # If we don't have a $meta then we don't have a metaclass so can simply swap things in and out, regardless of
+  # whether we're DESTROYing or not: there's no Moose/Class::MOP wrappers to copy from the original code to our
+  # replacement.
+  if ($is_destroy || ! defined $meta) {
+    $do_simple_swap->();
+    return;
+  }
 
-	# If we got this far then we're not DESTROYing, and do have a $meta - so we need to find any wrappers for the
-	# original code. Here's how we'd find it for some versions of Moose:
-	my ($wrapped) = grep { $_->{name} eq $target_sub && $_->can('before_modifiers') } $meta->get_all_methods;
+  # If we got this far then we're not DESTROYing, and do have a $meta - so we need to find any wrappers for the
+  # original code. Here's how we'd find it for some versions of Moose:
+  my ($wrapped) = grep { $_->{name} eq $target_sub && $_->can('before_modifiers') } $meta->get_all_methods;
 
-	# from here on out we assume you're a Moose-like class.
-	my $was_immutable = $meta->is_immutable;
-	$meta->make_mutable if $was_immutable;
+  # from here on out we assume you're a Moose-like class.
+  my $was_immutable = $meta->is_immutable;
+  $meta->make_mutable if $was_immutable;
 
-	# ugly code to go dig around for wrappers
-	my ($before, $around, $after) = ([], [], []);
-	if (defined $wrapped) {
-		($before, $around, $after) =
-			map { [$wrapped->$_] }
-			qw(before_modifiers around_modifiers after_modifiers);
-	} else {
-		if (_deep_exists($meta, methods => $target_sub => modifier_table =>)) {
-			my $modifier_table = $meta->{methods}{$target_sub}{modifier_table};
-			$before = [ @{$modifier_table->{before} || []} ];
-			$around = [ @{$modifier_table->{around}{cache} || []} ];
-			$after = [ @{$modifier_table->{after} || []} ];
-		}
-	}
+  # ugly code to go dig around for wrappers
+  my ($before, $around, $after) = ([], [], []);
+  if (defined $wrapped) {
+    ($before, $around, $after) =
+      map { [$wrapped->$_] }
+      qw(before_modifiers around_modifiers after_modifiers);
+  } else {
+    if (_deep_exists($meta, methods => $target_sub => modifier_table =>)) {
+      my $modifier_table = $meta->{methods}{$target_sub}{modifier_table};
+      $before = [ @{$modifier_table->{before} || []} ];
+      $around = [ @{$modifier_table->{around}{cache} || []} ];
+      $after = [ @{$modifier_table->{after} || []} ];
+    }
+  }
 
-	if (scalar grep { scalar @$_ } $before, $around, $after) {
-		no strict 'refs';
-		no warnings 'redefine';
-		*{$name} = sub {
-			my $context = _context();
+  if (scalar grep { scalar @$_ } $before, $around, $after) {
+    no strict 'refs';
+    no warnings 'redefine';
+    *{$name} = sub {
+      my $context = _context();
 
-			# call before hooks in correct context
-			+{
-				list => sub { ($_->(@_)) foreach @$before },
-				scalar => sub { scalar $_->(@_) foreach @$before },
-				void => sub { $_->(@_) foreach @$before },
-			}->{$context}->(@_);
+      # call before hooks in correct context
+      +{
+        list => sub { ($_->(@_)) foreach @$before },
+        scalar => sub { scalar $_->(@_) foreach @$before },
+        void => sub { $_->(@_) foreach @$before },
+      }->{$context}->(@_);
 
-			# $_->($code, @$_) foreach @$around;
+      # $_->($code, @$_) foreach @$around;
 
-			# call swapped-in code in correct context
-			my @out;
-			+{
-				list => sub { @out = $code->(@_) },
-				scalar => sub { $out[0] = $code->(@_) },
-				void => sub { $code->(@_); 1 },
-			}->{$context}->(@_);
+      # call swapped-in code in correct context
+      my @out;
+      +{
+        list => sub { @out = $code->(@_) },
+        scalar => sub { $out[0] = $code->(@_) },
+        void => sub { $code->(@_); 1 },
+      }->{$context}->(@_);
 
-			# call after hooks in correct context
-			+{
-				list => sub { ($_->(@_)) foreach @$after },
-				scalar => sub { scalar $_->(@_) foreach @$after },
-				void => sub { $_->(@_) foreach @$after },
-			}->{$context}->(@_);
+      # call after hooks in correct context
+      +{
+        list => sub { ($_->(@_)) foreach @$after },
+        scalar => sub { scalar $_->(@_) foreach @$after },
+        void => sub { $_->(@_) foreach @$after },
+      }->{$context}->(@_);
 
-			return $context eq 'list' ? @out : $out[0];
-		};
-	} else {
-		# we're moose-like but don't have any wrappers: swap ourselves in!
-		$do_simple_swap->();
-	}
+      return $context eq 'list' ? @out : $out[0];
+    };
+  } else {
+    # we're moose-like but don't have any wrappers: swap ourselves in!
+    $do_simple_swap->();
+  }
 
-	$meta->make_immutable if $was_immutable;
+  $meta->make_immutable if $was_immutable;
 }
 
 sub _deep_exists {
-	my ($hashref, @keys) = @_;
-	foreach (@keys) {
-		return 0 unless exists $hashref->{$_};
-		$hashref = $hashref->{$_};
-	}
-	return 1;
+  my ($hashref, @keys) = @_;
+  foreach (@keys) {
+    return 0 unless exists $hashref->{$_};
+    $hashref = $hashref->{$_};
+  }
+  return 1;
 }
 
 sub called { return shift->{called} }
@@ -308,58 +308,58 @@ sub was_called { return shift->{was_called} }
 sub not_called { return ! shift->called }
 
 sub _args {
-	my ($self, $mutator) = @_;
-	return [map { $mutator->() } @{$self->{args}}];
+  my ($self, $mutator) = @_;
+  return [map { $mutator->() } @{$self->{args}}];
 }
 
 sub args { shift->_args(sub { [@$_] }) }
 sub method_args { shift->_args(sub { my @copy = @$_; shift @copy; \@copy; }) }
 
 sub named_args {
-	my ($self, %args) = @_;
+  my ($self, %args) = @_;
 
-	return $self->_args(sub {
-		my @copy = @$_;
-		splice @copy, 0, $args{arg_start_index} if $args{arg_start_index};
-		my @scalars = $args{scalars}
-			? splice @copy, 0, $args{scalars}
-			: ();
-		return $args{scalars}
-			? (@scalars, +{@copy})
-			: +{@copy};
-	});
+  return $self->_args(sub {
+    my @copy = @$_;
+    splice @copy, 0, $args{arg_start_index} if $args{arg_start_index};
+    my @scalars = $args{scalars}
+      ? splice @copy, 0, $args{scalars}
+      : ();
+    return $args{scalars}
+      ? (@scalars, +{@copy})
+      : +{@copy};
+  });
 }
 
 sub named_method_args {
-	my ($self, %args) = @_;
-	$args{arg_start_index} += 1;
-	return $self->named_args(%args);
+  my ($self, %args) = @_;
+  $args{arg_start_index} += 1;
+  return $self->named_args(%args);
 }
 
 sub reset {
-	my ($self) = @_;
-	$self->{called} = 0;
-	$self->{args} = [];
+  my ($self) = @_;
+  $self->{called} = 0;
+  $self->{args} = [];
 }
 
 sub DESTROY {
-	my($self,) = @_;
+  my($self,) = @_;
 
-	$self->swap_out($self->{orig_code}, 1);
+  $self->swap_out($self->{orig_code}, 1);
 
-	if ($self->{autovivified}) {
-		my ($package, $sub) = @{$self}{qw(target_package target_sub)};
-		local $@;
-		eval "delete \$${package}::{$sub}";
-		croak "ack: $@\n" if $@;
-	}
-	_restore_variables($self->{name}, $self->{stashed_variables});
+  if ($self->{autovivified}) {
+    my ($package, $sub) = @{$self}{qw(target_package target_sub)};
+    local $@;
+    eval "delete \$${package}::{$sub}";
+    croak "ack: $@\n" if $@;
+  }
+  _restore_variables($self->{name}, $self->{stashed_variables});
 
-	if (
-			(!$self->was_called && $self->{call} eq 'required') ||
-			($self->was_called  && $self->{call} eq 'forbidden')
-	)	{
-		my $text = 'was not called';
+  if (
+      (!$self->was_called && $self->{call} eq 'required') ||
+      ($self->was_called  && $self->{call} eq 'forbidden')
+  )  {
+    my $text = 'was not called';
     print STDOUT "not ok 1000 - the " . __PACKAGE__ . " object for '$self->{name}' $text\n" . Carp::longmess;
   }
 }
@@ -630,7 +630,7 @@ For example:
   # returns [3306, {a => 'b', c => 123},
   #          9158, {a => 'z', c => 456}]
 
-Note: the first argument is automatically discarded B<before> the optional 
+Note: the first argument is automatically discarded B<before> the optional
 C<arg_start_index> parameter is applied. That is,
 
   my $rs = resub 'SomeClass::some_sub';
