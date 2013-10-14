@@ -1,5 +1,6 @@
 Changes
 MANIFEST
+MANIFEST.SKIP
 META.yml # Will be created by "make dist"
 Makefile.PL
 README
@@ -14,3 +15,4 @@ t/lib/IO/Capture/Stderr.pm
 t/lib/IO/Capture/Stdout.pm
 t/lib/IO/Capture/Tie_STDx.pm
 t/lib/IO/Capture/Overview.pod
+t/bulk-resub.t
