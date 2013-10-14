@@ -1,9 +1,8 @@
-package Test::Resub;
-
 use strict;
 use warnings;
-
+package Test::Resub;
 use base qw(Exporter);
+
 our @EXPORT = qw(resub bulk_resub);
 
 our $VERSION = 2.02;
