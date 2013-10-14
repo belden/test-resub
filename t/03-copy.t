@@ -58,5 +58,5 @@ use Test::Resub;
 
   is( $rs1->named_args->[0]{bert}[2][2][1], 100, 'shallow copy' );
   is( $rs2->named_args->[0]{bert}[2][2][1], 6, 'deep copy' );
-  is( $rs_default->named_args->[0]{bert}[2][2][1], 6, 'deep copy by default' );
+  is( $rs_default->named_args->[0]{bert}[2][2][1], 100, 'shallow copy by default' );
 }

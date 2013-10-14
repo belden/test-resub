@@ -65,7 +65,7 @@ sub _validate_params_lameley {
     if exists $args{call} && ! in($args{call}, qw(optional required forbidden));
 
   return (
-    deep_copy => 1,
+    deep_copy => 0,
     call => 'required',
     %args,
   );
@@ -489,9 +489,11 @@ This is mainly useful to catch typos.
 
 =item B<deep_copy>
 
-Whether or not to make a deep copy of saved-off arguments. Default is 1.
-Normally, one wants deep copies, but there is an associated performance
-penalty, e.g. for large objects.
+Whether or not to make a deep copy of saved-off arguments. Default is 0.
+Occassionally one wants deep copies, but there is an associated performance
+penalty, e.g. for large objects. Things like filehandles and sockets don't
+perform well with deep_copy, and can cause superfluous test failures. Enable
+this with caution.
 
 =back
 
