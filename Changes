@@ -1,5 +1,10 @@
 Revision history for Test-Resub
 
+2.02    * Fix for resubbing 'new' in Moose classes
+        * Add repo url to Makefile.PL (thanks dsteinbrunner)
+        * deep_copy is no longer on by default; it's now off by default.
+2.01    There actually was no 2.00 release of this module; the notes for 2.00
+        apply to 2.01.
 2.00    Re-release to CPAN under new maintainer. Changes include a few minor
         bug fixes, removal of ->unique_args and ilk, and support for Moose
         methods with 'before' and 'after' advice applied to them. Additionally,
