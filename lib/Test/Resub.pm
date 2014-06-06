@@ -348,11 +348,12 @@ sub DESTROY {
   }
   _restore_variables($self->{name}, $self->{stashed_variables});
 
-  if (
-      (!$self->was_called && $self->{call} eq 'required') ||
-      ($self->was_called  && $self->{call} eq 'forbidden')
-  )  {
+  if (!$self->was_called && $self->{call} eq 'required') {
     my $text = 'was not called';
+    print STDOUT "not ok 1000 - the " . __PACKAGE__ . " object for '$self->{name}' $text\n" . Carp::longmess;
+  }
+  if ($self->was_called && $self->{call} eq 'forbidden') {
+    my $text = 'was called';
     print STDOUT "not ok 1000 - the " . __PACKAGE__ . " object for '$self->{name}' $text\n" . Carp::longmess;
   }
 }
