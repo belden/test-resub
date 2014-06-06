@@ -275,7 +275,7 @@ sub stdout_of { return _std_of('IO::Capture::Stdout', @_) }
       code => sub { },
     });
     my $output = stdout_of(sub { undef $rs });
-    like( $output, qr/not ok 1000/, q{not ok 1000 if not called} );
+    like( $output, qr/not ok 1000.+was not called/, q{not ok 1000 if not called} );
 
     $rs = resub('TestChild::base_method', sub {}, call => 'required');
     like( stdout_of(sub{ undef $rs }), qr/not ok 1000/ );
@@ -308,7 +308,7 @@ sub stdout_of { return _std_of('IO::Capture::Stdout', @_) }
     });
     TestChild->base_method();
     my $output = stdout_of(sub{ undef $rs });
-    like( $output, qr/not ok 1000/ );
+    like( $output, qr/not ok 1000.+was called/ );
     like( $output, qr/Test::Resub/ ) or warn $output;
   }
 
