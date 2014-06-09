@@ -5,7 +5,7 @@ use base qw(Exporter);
 
 our @EXPORT = qw(resub bulk_resub);
 
-our $VERSION = 2.02;
+our $VERSION = 2.03;
 
 use Carp qw(croak);
 use Storable qw(dclone);

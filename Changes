@@ -1,5 +1,6 @@
 Revision history for Test-Resub
 
+2.03    * Better failed tests reporting
 2.02    * Fix for resubbing 'new' in Moose classes
         * Add repo url to Makefile.PL (thanks dsteinbrunner)
         * deep_copy is no longer on by default; it's now off by default.
