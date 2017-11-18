@@ -161,11 +161,8 @@ sub _restore_variables {
 sub _implements {
   my ($package, $sub) = @_;
 
-  local $@;
-  my %stash = eval "\%$package\::";
-  croak "finding $package\'s stash: $@\n" if $@;
-
-  return exists $stash{$sub} && *{$stash{$sub}}{CODE} && *{$stash{$sub}}{NAME} eq $sub;
+  no strict 'refs';
+  exists &{"$package\::$sub"};
 }
 
 sub _get_orig_code {
@@ -200,6 +197,8 @@ sub _looks_moosey {
   return $meta;
 }
 
+use constant _NEED_LOCAL_WARN => "$]" < 5.016;
+
 sub swap_out {
   my ($self, $code, $is_destroy) = @_;
 
@@ -208,6 +207,7 @@ sub swap_out {
   my $do_simple_swap = sub {
     no strict 'refs';
     no warnings 'redefine';
+    local $SIG{__WARN__} = sub {} if _NEED_LOCAL_WARN;
     *{$name} = $code;
   };
 
