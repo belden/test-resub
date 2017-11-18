@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 62;
+use Test::More tests => 63;
 
 # We need IO::Capture::Std(out|err) only for this test, so rather than
 # make the user install it for us, we have a copy for use in testing
@@ -441,3 +441,4 @@ sub stdout_of { return _std_of('IO::Capture::Stdout', @_) }
   my $rs = resub 'HasConstant::foo', sub () { 43 };
   is (HasConstant->foo, 43, 'resub works on constants');
 }
+is (HasConstant->foo, 42, 'constant gets restored');
