@@ -197,6 +197,8 @@ sub _looks_moosey {
   return $meta;
 }
 
+use constant _NEED_LOCAL_WARN => "$]" < 5.016;
+
 sub swap_out {
   my ($self, $code, $is_destroy) = @_;
 
@@ -205,6 +207,7 @@ sub swap_out {
   my $do_simple_swap = sub {
     no strict 'refs';
     no warnings 'redefine';
+    local $SIG{__WARN__} = sub {} if _NEED_LOCAL_WARN;
     *{$name} = $code;
   };
 
