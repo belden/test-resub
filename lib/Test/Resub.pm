@@ -161,11 +161,8 @@ sub _restore_variables {
 sub _implements {
   my ($package, $sub) = @_;
 
-  local $@;
-  my %stash = eval "\%$package\::";
-  croak "finding $package\'s stash: $@\n" if $@;
-
-  return exists $stash{$sub} && *{$stash{$sub}}{CODE} && *{$stash{$sub}}{NAME} eq $sub;
+  no strict 'refs';
+  exists &{"$package\::$sub"};
 }
 
 sub _get_orig_code {
